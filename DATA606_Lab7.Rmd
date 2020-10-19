@@ -128,8 +128,7 @@ Make a side-by-side boxplot of physical_3plus and weight. Is there a relationshi
 
 yrbss1 <- yrbss1 %>% 
   mutate(physical_3plus = ifelse(yrbss1$physically_active_7d > 2, "yes", "no"))
-boxplot(yrbss1$weight, yrbss1$physical_3plus )
-names = 
+
 
 boxplot(weight ~ physical_3plus, data = yrbss1, xlab = "Physical Active",
    ylab = "Weights", main = "Activities by Weights" , col = c("green","purple"))
@@ -161,8 +160,8 @@ yrbss1 %>%
 
 #Exercice 5
 Write the hypotheses for testing if the average weights are different for those who exercise at least times a week and those who don’t.
-Answer: H_nul = there is no difference in the average weights are different for those who exercise at least 02 times a week and those who don’t.
-        H_alt = there is difference in the average weights are different for those who exercise at least 02 times a week and those who don’t.
+Answer: H_nul = there is no difference in the average weights are different for those who exercise at least 03 times a week and those who don’t.
+        H_alt = there is difference in the average weights are different for those who exercise at least 03 times a week and those who don’t.
 
 Next, we will introduce a new function, hypothesize, that falls into the infer workflow. You will use this method for conducting hypothesis tests.
 
@@ -209,82 +208,189 @@ ggplot(data = null_dist, aes(x = stat)) +
 
 ```
 
-## 7.34 Email outreach efforts. A medical research group is recruiting people to complete short surveys
-about their medical history. For example, one survey asks for information on a person's family history in
-regards to cancer. Another survey asks about what topics were discussed during the person's last visit to a
-hospital. So far, as people sign up, they complete an average of just 4 surveys, and the standard deviation
-of the number of surveys is about 2.2. The research group wants to try a new interface that they think will
-encourage new enrollees to complete more surveys, where they will randomize each enrollee to either get the
-new interface or the current interface. How many new enrollees do they need for each interface to detect an
-effect size of 0.5 surveys per enrollee, if the desired power level is 80%?
+# Exercice 6
+How many of these null permutations have a difference of at least obs_stat?
+Answer: none
 
-#Answer: they need n = 304 new enrollees for each interface to detect an effect size of 0.5 surveys per enrollee, if the desired power level is 80%
+
+Now that the test is initialized and the null distribution formed, you can calculate the p-value for your hypothesis test using the function get_p_value.
 
 ```{r }
-sd <- 2.2
-mean <- 4
-power_level <- 0.80
-effect_size <- 0.5
-z_score80 <- qnorm(0.80)
-z_score5 <- qnorm(0.975)
-n <- 2*((z_score80 + z_score5)^2) * ((sd)^2/effect_size^2)
-n
+
+null_dist %>%
+  get_p_value(obs_stat = obs_diff, direction = "two_sided")
+
+## Warning: Please be cautious in reporting a p-value of 0. This result is an
+## approximation based on the number of `reps` chosen in the `generate()` step. See
+## `?get_p_value()` for more information.
+
+```
+
+#Exercice 7
+
+Construct and record a confidence interval for the difference between the weights of those who exercise at least three times a week and those who don’t, and interpret this interval in context of the data.
+
+There is a probability that difference between the weights of those who exercise at least three times a week and those who don’t lies on (0.72, 2.33) 
+
+
+```{r }
+
+ yrbss2 <- filter( yrbss1, physical_3plus == "no" & weight != 0) 
+ physical_no <- yrbss2$weight 
+ 
+physical_yes <- (filter( yrbss1, physical_3plus == "yes" & weight != 0))$weight 
+glimpse (physical_no)
+
+n_yes <- nrow(physical_yes) 
+n_no <- nrow(physical_no)
+df <- n_yes - 1
+mean_no <- mean(physical_no)
+mean_yes <- mean(physical_yes)
+sd_no <- sd(physical_no)
+sd_yes <- sd(physical_yes)
+SE <- sqrt( (sd_yes^2)/n_yes + (sd_no^2)/n_no)
+t_value <- qt(0.05/2, df, lower.tail = FALSE)
+point_estimate <-  mean_yes - mean_no
+lower_CI <- point_estimate - t_value * SE
+upper_CI <- point_estimate + t_value * SE
+lower_CI 
+upper_CI
+p_value <- 2*pt(t_value, df, lower.tail = FALSE) 
+
+```
+#Exercice 8
+Calculate a 95% confidence interval for the average height in meters (height) and interpret it in context.
+we are 95% confidence interval that the average height in meters (height) is (1.69, 1.7) 
+
+
+```{r }
+
+n_yes <- 8351
+#n_no <- nrow(physical_no)
+df <- n_yes - 1
+mean_h <- mean(yrbss1$height)
+#mean_yes <- mean(physical_yes)
+sd_h <- sd(yrbss1$height)
+#sd_yes <- sd(physical_yes)
+SE <- sd_h/sqrt(n_yes)
+
+t_value <- qt(0.05/2, df, lower.tail = FALSE)
+point_estimate <-  mean_h
+lower_CI <- point_estimate - t_value * SE
+upper_CI <- point_estimate + t_value * SE
+lower_CI 
+upper_CI
 
 
 ```
 
-## Work hours and education. The General Social Survey collects data on demographics, education, and work, among many other characteristics of US residents.47 Using ANOVA, we can consider educational attainment levels for all 1,172 respondents at once. Below are the distributions of hours worked by educational attainment and relevant summary statistics that will be helpful in carrying out this analysis. Educational attainment
+#Exercice 9
+
+Calculate a new confidence interval for the same parameter at the 90% confidence level. 
+Comment on the width of this interval versus the one obtained in the previous exercise.
+Answer: we are 90% confidence interval that the average height in meters (height) is (1.695, 1.699) 
+        The confidence interval becomes more narrowed. 
+
+```{r }
+
+t_value <- qt(0.1/2, df, lower.tail = FALSE)
+point_estimate <-  mean_h
+lower_CI <- point_estimate - t_value * SE
+upper_CI <- point_estimate + t_value * SE
+lower_CI 
+upper_CI
+
+
+```
+
+#Exercice 10
+
+Conduct a hypothesis test evaluating whether the average height is different for those who exercise at least three times a week and those who don’t.
+H_null: there is no difference in the average height for those who exercise at least three times a week and those who don’t.
+H_alt: there is difference in the average height for those who exercise at least three times a week and those who don’t.
+
+Answer: p_value = 0.05 < alpha (0.1), thus reject the H_null. There is a difference in the average height for those who exercise at least three times a week and those who don’t. strange finding
+
+```{r }
+
+yrbss3 <- filter( yrbss1, physical_3plus == "no" & height != 0) 
+height_no <- yrbss3$height 
  
-      Less than HS   HS		   Jr Coll      	Bachelor’s	Graduate	    Total
-              
-Mean	  38.67	      39.6	   41.39  	42.55	      40.85	        40.45
-SD    	15.81	      14.97	   18.1	    13.62	      15.51	        15.17
-n	      121	        546	     97	      253	        155	          1,172
- 
-# (a)	Write hypotheses for evaluating whether the average number of hours worked varies across the five groups.
-Answer: H_null there is no difference in the average number of hours worked varies across the five groups.
-        H_alt  there is difference in the average number of hours worked varies across the five groups.
-        
-#(b)	Check conditions and describe any assumptions you must make to proceed with the test.
-Answer: the sample is independent, sample size is large, ditribution seems normal.
+height_yes <- (filter( yrbss1, physical_3plus == "yes" & weight != 0))$height 
+#glimpse (height_yes) 
 
-(c)	Below is part of the output associated with this test. Fill in the empty cells.
+n_yes <- 5695 
+n_no <- 2656
+df <- n_yes - 1
+mean_no <- mean(height_no)
+mean_yes <- mean(height_yes)
+sd_no <- sd(height_no)
+sd_yes <- sd(height_yes)
+SE <- sqrt( (sd_yes^2)/n_yes + (sd_no^2)/n_no)
+t_value <- qt(0.05/2, df, lower.tail = FALSE)
+point_estimate <-  mean_yes - mean_no
+lower_CI <- point_estimate - t_value * SE
+upper_CI <- point_estimate + t_value * SE
+lower_CI 
+upper_CI
+p_value <- 2*pt(t_value, df, lower.tail = FALSE) 
+p_value 
 
-          	Df    Sum sq     	Mean sq  	   F-value	     Pr(>F)
-degree	  XXXXX	  XXXXX	      501.54	     XXXXX	      0.0682
-Residuals XXXXX	  267,382	    XXXXX		     
-Total	    XXXXX   XXXXX
 
-df_deg  = 4  , df_Resi = 1167 , df_total = 1171, sumsq_deg = 2006.16, sumsq_total = 269388.2 ,  meansq_Resi = 229.12, F_value = 2.2
+```     
 
-#(d)	What is the conclusion of the test?
-#Answer: p_value = 0.0682 > alpha (0.05 ) , so based on the 95% CI , we reject the H_null, thus, there is difference in the average number of hours worked varies across the five groups
+# Exercice 11
+
+Now, a non-inference task: Determine the number of different options there are in the dataset for the hours_tv_per_school_day there are.
+Answer: There are 07 different options there are in the dataset for the hours_tv_per_school_day.
+
+```{r }
+glimpse(yrbss1$hours_tv_per_school_day)
+
+```
+
+
+# Exercice 12
+
+Come up with a research question evaluating the relationship between height or weight and sleep. Formulate the question in a way that it can be answered using a hypothesis test and/or a confidence interval. Report the statistical results, and also provide an explanation in plain language. Be sure to check all assumptions, state your α level, and conclude in context.
+
+Let's find out the correlation between sleep and weight.
+
+asumming a 95% CI , Conduct a hypothesis test evaluating whether the average weight is different for those who sleep at least 8hrs a day and those who don’t.
+H_null: there is no difference in the average weight for those who sleep at least 8hrs a day and those who don’t.
+H_alt: there is difference in the average weight for those who sleep at least 8hrs a day and those who don’t.
+p_value = 0.05 = alpha, which mean we are at the boundary which mean the research question evaluation need to be adjust or the data does not provide convincing about the relationship between weight and sleeping at least 8hrs. 
 
 
 ```{r }
 
-k <- 5
-n  <- 121+546+97+253+155
-df_deg <- k-1
-df_deg 
-df_Resi <- n-k
-df_Resi
-df_total <- df_Resi + df_deg 
-df_total
-meansq_deg <- 501.54
+yrbss1 <- yrbss1 %>% 
+  mutate(sleep_8hrs = ifelse(yrbss1$school_night_hours_sleep > 7, "yes", "no"))
 
-sumsq_Resi <- 267382
-sumsq_deg <- df_deg*meansq_deg 
-sumsq_deg
-sumsq_total <- sumsq_Resi + sumsq_deg
-sumsq_total 
-meansq_Resi <- sumsq_Resi/ df_Resi
-meansq_Resi
 
-F_value <- meansq_deg/meansq_Resi
-F_value
-p_value <- pf(F_value, df_deg, df_Resi, lower.tail = FALSE)
-p_value
+yrbss4 <- filter( yrbss1, sleep_8hrs == "no" & weight != 0) 
+weight_no <- yrbss4$weight 
+ 
+weight_yes <- (filter( yrbss1, sleep_8hrs == "yes" & weight != 0))$weight 
+#glimpse (weight_yes) 
+
+n_yes <- 2295 
+n_no <- 6056
+df <- n_yes - 1
+mean_no <- mean(weight_no)
+mean_yes <- mean(weight_yes)
+sd_no <- sd(weight_no)
+sd_yes <- sd(weight_yes)
+SE <- sqrt( (sd_yes^2)/n_yes + (sd_no^2)/n_no)
+t_value <- qt(0.05/2, df, lower.tail = FALSE)
+point_estimate <-  mean_yes - mean_no
+lower_CI <- point_estimate - t_value * SE
+upper_CI <- point_estimate + t_value * SE
+lower_CI 
+upper_CI
+p_value <- 2*pt(t_value, df, lower.tail = FALSE) 
+p_value 
+
 
 
 ```
