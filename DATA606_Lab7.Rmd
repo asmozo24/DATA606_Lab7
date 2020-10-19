@@ -2,15 +2,19 @@
 title: "DATA606 Chap7 Lab7 Inference for numerical data"
 author: "Alexis Mekueko"
 date: "10/16/2020"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Github link: https://github.com/asmozo24/DATA606_Homework7
-Web Link : file:///C:/Users/Petit%20Mandela/Documents/R/DATA606_Homework7/DATA606_Homework7/DATA606_Homework7.html
+Github link: https://github.com/asmozo24/DATA606_Lab7
+
+Web Link : fhttps://rpubs.com/amekueko/678061
+
 
 
 
@@ -84,7 +88,7 @@ yrbss
 
 ```{r }
 
-view(yrbss1)
+view(yrbss)
 glimpse(yrbss)
 
 #is.na(airlines_arrival2) # checking if there is a missing data in the dataset, return is yes
