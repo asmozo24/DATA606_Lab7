@@ -61,125 +61,150 @@ library(knitr)
 
 ```
 
+##The data
 
-## Working backwards, Part II. A 90% confidence interval for a population mean is (65, 77). The
-population distribution is approximately normal and the population standard deviation is unknown. This
-confidence interval is based on a simple random sample of 25 observations. Calculate the sample mean, the
-margin of error, and the sample standard deviation.
+Every two years, the Centers for Disease Control and Prevention conduct the Youth Risk Behavior Surveillance System (YRBSS) survey, where it takes data from high schoolers (9th through 12th grade), to analyze health patterns. You will work with a selected group of variables from a random sample of observations during one of the years the YRBSS was conducted.
 
-# Since we only know there is 25 observations and not the elements that define these observation, then the sample mean is midpoint or the average of the population mean = (65 + 77)/2 = 71 , point estimate _+ t* x standard error(SE) = mean sample _+ t* x (standard deviation(s)/sqrt(n observation))
-margin of error = mean sample - Lower_Ci = 71 - 65 = 6....compute t* or t-value ...The t-value is a cutoff we obtain based on the confidence level and the t-distribution with df degrees of freedom. That cutoff is found in the same way as with a normal distribution: we find t-value such that the fraction of the t-distribution with df degrees of freedom within a distance t-value of 0 matches the condence level of interest.
-sample standard deviation = (margin of error x sqrt(n observation)) / t* = 6*sqrt(25)/1.71 = 17.544
+Load the yrbss data set into your workspace.
 
 
 ```{r }
 
-help(pt)
-n <- 25
-t_value <- abs(qt(0.10/2, df = n-1))
-t_value
+data(yrbss)
+yrbss
+?yrbss
 
-```
-## 7.14 SAT scores. The standard deviation of SAT scores for students at a particular Ivy League college is
-250 points. Two statistics students, Raina and Luke, want to estimate the average SAT score of students at
-this college as part of a class project. They want their margin of error to be no more than 25 points.
-
-#(a) Raina wants to use a 90% confidence interval. How large a sample should she collect?
-# Answer:  271
-
-#(b) Luke wants to use a 99% confidence interval. Without calculating the actual sample size, determine whether his sample should be larger or smaller than Raina's, and explain your reasoning.
-# Answer: at 99% CI, Luke need a large sample, there is high probability with large sample size. 
-
-
-# (c) Calculate the minimum required sample size for Luke. 
-# Answer: with 99% CI, samp ...minimum required sample size is 663
-
-```{r }
-#(0.99) + (1-0.99)/2= 0.995 
-sd <- 250
-margin_error <- 25
-z_value <- qnorm(0.995, 0 , 1 )
-n <- ((sd * z_value)/ margin_error)^2
-
-
+#There are observations on 13 different variables, some categorical and some numerical. The meaning of each variable can be found by bringing up the help file:
 
 ```
 
-
-## 7.20 High School and Beyond, Part I. The National Center of Education Statistics conducted a survey of
-high school seniors, collecting test data on reading, writing, and several other subjects. Here we examine a
-simple random sample of 200 students from this survey. Side-by-side box plots of reading and writing scores
-as well as a histogram of the differences in scores are shown below.
-
-# (a) Is there a clear difference in the average reading and writing scores?
-# Answer: The plot on scores shows a clear difference even it is not very significant (in 50 range)
-
-# (b) Are the reading and writing scores of each student independent of each other?
-# Answer: there are independent since it a simple random sample of 200 students who did not receive special instructions. The problem statement does not give me the option to think otherwise.
-
-# (c) Create hypotheses appropriate for the following research question: is there an evident difference in the average scores of students in the reading and writing exam?
-# Answer: H_null = there is no difference betweeen the average scores in reading and writing
-        H_alt = There is a difference betweeen the average scores in reading and writing
-
-# (d) Check the conditions required to complete this test.
-# sample is independent, sample size is large , sample is normal  
-
-# (e) The average observed difference in scores is mean_read_write = -0.545, and the standard deviation of the
-differences is 8.887 points. Do these data provide convincing evidence of a difference between the average
-scores on the two exams?
-# Answer: p_value = 0.1934182 > alpha_value (0.05) , thus I  cannot reject the H_null. based on this test, there is no difference betweeen the average scores in reading and writing
-
-# (f) What type of error might we have made? Explain what the error means in the context of the application.
-# Answer: error of type II, or type II error, which means we failed to reject the H_null.
-
-
-# (g) Based on the results of this hypothesis test, would you expect a confidence interval for the average difference between the reading and writing scores to include 0? Explain your reasoning.
-# Answer: We failed to reject the H_null , which mean there is no difference, if there is a chance that the actual difference is 0 , this statement still holds based on our test above.
-
+## Exercice1 
+#  What are the cases in this data set? How many cases are there in our sample?
+# There are observations on 13 different variables in this 13583 sample (after cleanup)...the cases are about students male and female from ages 14 to 19 on various activities. 
 
 ```{r }
 
-mean <- -0.545
-sd <- 8.887
-n <- 200
-SE <- sd/sqrt(n)
-t <- mean/SE
-p_value <- pt(t, n-1)
+view(yrbss1)
+glimpse(yrbss)
+
+#is.na(airlines_arrival2) # checking if there is a missing data in the dataset, return is yes
+#sum(is.na(airlines_arrival2)) # file to big, checking the sum of all missing data (return is 09 missing data)
+yrbss1 <- na.omit(yrbss) # delete/remove the missings data because it is an imcomplete observation
 
 ```
 
-##7.28 Fuel efficiency of manual and automatic cars, Part II. (7.28, p.276)
-98% CI,
+### Exploratory data analysis
 
-       HWy MPG
-      Automatic  Manual
-Mean    22.92       27.88
-SD      5.29        5.01
-n       26          26
+You will first start with analyzing the weight of the participants in kilograms: weight.
 
-H_null: there is no difference between average highway mileage of automatic and manual cars
-H_alt: there is difference between average highway mileage of automatic and manual cars
-Lower_CI = -8.055794, upper_CI = -1.864206 < alpha (0.02), thus we reject the H_null. meaning ,  there is difference between average highway mileage of automatic and manual cars
+Using visualization and summary statistics, describe the distribution of weights. The summary function can be useful.
+
+# Exercie 2 
+How many observations are we missing weights from? I already cleaned up all the misses
+
+```{r }
+
+summary(yrbss$weight1)
+
+
+```
+
+Next, consider the possible relationship between a high schooler’s weight and their physical activity. Plotting the data is a useful first step because it helps us quickly visualize trends, identify strong associations, and develop research questions.
+
+First, let’s create a new variable physical_3plus, which will be coded as either “yes” if they are physically active for at least 3 days a week, and “no” if not
+
+```{r }
+
+summary(yrbss$weight1)
+
+
+```
+
+# Exercice 3 
+Make a side-by-side boxplot of physical_3plus and weight. Is there a relationship between these two variables? What did you expect and why?
+# it is hard to say if there is a relationship between weight and physical activity. Thought, people who exercise more lose weight Vs. those who don't. 
+
+```{r }
+
+yrbss1 <- yrbss1 %>% 
+  mutate(physical_3plus = ifelse(yrbss1$physically_active_7d > 2, "yes", "no"))
+boxplot(yrbss1$weight, yrbss1$physical_3plus )
+names = 
+
+boxplot(weight ~ physical_3plus, data = yrbss1, xlab = "Physical Active",
+   ylab = "Weights", main = "Activities by Weights" , col = c("green","purple"))
+  
+  
+```
+
+
+# Exercice 4: 
+Are all conditions necessary for inference satisfied? Comment on each. You can compute the group sizes with the summarize command above by defining a new variable with the definition n().
+Answer: Yes, conditions for inference are satisfied.
+        we assume independent sample since the the problem statement did not let's to think otherwise
+        Large sample
+        Normal distribution (male/female...age spread from 14 to 18 etc...)
+The mean_weight : "no" physical_3plus = 67.15; "yes" physical_3plus = 68.68
+
+```{r }
+
+# The box plots show how the medians of the two distributions compare, but we can also compare the means of the distributions using the following to first group the data by the physical_3plus variable, and then calculate the mean weight in these groups using the mean function while ignoring missing values by setting the na.rm argument to TRUE.
+# 
+# There is an observed difference, but is this difference statistically significant? In order to answer this question we will conduct a hypothesis test.
+
+yrbss1 %>%
+  group_by(physical_3plus) %>%
+  summarise(mean_weight = mean(weight, na.rm = TRUE))
+
+
+```
+
+#Exercice 5
+Write the hypotheses for testing if the average weights are different for those who exercise at least times a week and those who don’t.
+Answer: H_nul = there is no difference in the average weights are different for those who exercise at least 02 times a week and those who don’t.
+        H_alt = there is difference in the average weights are different for those who exercise at least 02 times a week and those who don’t.
+
+Next, we will introduce a new function, hypothesize, that falls into the infer workflow. You will use this method for conducting hypothesis tests.
+
+But first, we need to initialize the test, which we will save as obs_diff.
+
+
+```{r }
+
+obs_diff <- yrbss1 %>%
+  specify(weight ~ physical_3plus) %>%
+  calculate(stat = "diff in means", order = c("yes", "no"))
+
+```
+
+Notice how you can use the functions specify and calculate again like you did for calculating confidence intervals. Here, though, the statistic you are searching for is the difference in means, with the order being yes - no != 0.
+
+After you have initialized the test, you need to simulate the test on the null distribution, which we will save as null.
+
+
+```{r }
+
+null_dist <- yrbss1 %>%
+  specify(weight ~ physical_3plus) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "diff in means", order = c("yes", "no"))
+
+```
+
+Here, hypothesize is used to set the null hypothesis as a test for independence. In one sample cases, the null argument can be set to “point” to test a hypothesis relative to a point estimate.
+
+Also, note that the type argument within generate is set to permute, which is the argument when generating a null distribution for a hypothesis test.
+
+We can visualize this null distribution with the following code:
+
 
 
 ```{r }
 
 
-mean_Auto <- 22.92 
-mean_Manual <- 27.88
-sd_Auto <- 5.29
-sd_Manual <- 5.01
-# n_auto = n_Manual =n = 26
-n <- 26
-df <- n -1
-t_value <- qt(0.98, df)
-point_estimate <-  mean_Auto - mean_Manual 
-SE <- sqrt( (sd_Auto^2)/n + (sd_Manual^2)/n)
-
-lower_CI <- point_estimate - t_value * SE
-upper_CI <- point_estimate + t_value * SE
-lower_CI 
-upper_CI
+ggplot(data = null_dist, aes(x = stat)) +
+  geom_histogram()
 
 
 ```
